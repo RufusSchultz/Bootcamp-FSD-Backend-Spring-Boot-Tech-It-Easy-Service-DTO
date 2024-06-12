@@ -1,96 +1,77 @@
 package com.servicedto.techiteasy.controllers;
 
-import com.servicedto.techiteasy.exceptions.ProductNameTooLongException;
-import com.servicedto.techiteasy.exceptions.RecordNotFoundException;
+import com.servicedto.techiteasy.dtos.inputs.TelevisionInputDto;
+import com.servicedto.techiteasy.dtos.outputs.TelevisionOutputDto;
 import com.servicedto.techiteasy.models.Television;
-import com.servicedto.techiteasy.repositories.TelevisionRepository;
+import com.servicedto.techiteasy.services.TelevisionService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
 
+import static com.servicedto.techiteasy.helpers.ValidationChecker.validationCheckToNullOrResponse;
+
 @RestController
 @RequestMapping("/televisions")
 public class TelevisionController {
 
-    private final TelevisionRepository repo;
+    private final TelevisionService service;
 
-    public TelevisionController(TelevisionRepository repo) {
-        this.repo = repo;
+    public TelevisionController(TelevisionService service) {
+        this.service = service;
     }
 
     @GetMapping
     public ResponseEntity<List<Television>> getAllTelevisions() {
-        return ResponseEntity.ok(repo.findAll());
+        return ResponseEntity.ok(service.getAllTelevisions());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTelevision(@PathVariable Long id) {
-        if (repo.findById(id).isPresent()) {
-            return ResponseEntity.ok(repo.findByIdIs(id));
-        } else {
-            throw new RecordNotFoundException("No television in database with id " + id + "!");
-        }
+    public ResponseEntity<TelevisionOutputDto> getTelevision(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getTelevisionById(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createTelevision(@RequestBody Television television) {
-        if (television.getName().length() < 21) {
-            try {
-                this.repo.save(television);
+    public ResponseEntity<?> createTelevision(@Valid @RequestBody TelevisionInputDto televisionInputDto, BindingResult br) {
+        try {
+            if (validationCheckToNullOrResponse(br) == null) {
+                TelevisionOutputDto televisionOutputDto = service.createTelevision(televisionInputDto);
                 URI uri = URI.create(ServletUriComponentsBuilder
                         .fromCurrentRequest()
-                        .path("/" + television.getId()).toUriString());
-                return ResponseEntity.created(uri).body(television);
-            } catch (Exception ex) {
-                return ResponseEntity.unprocessableEntity().body("Failed to create television");
+                        .path("/" + televisionOutputDto.getId()).toUriString());
+                return ResponseEntity.created(uri).body(televisionOutputDto);
+            } else {
+                return validationCheckToNullOrResponse(br);
             }
-        } else {
-            throw new ProductNameTooLongException("Name for new television exceeds 20 characters! Please use a shorter name.");
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updateTelevision(@PathVariable Long id, @RequestBody Television updateTelevisionDetails) {
-        if (updateTelevisionDetails.getName().length() < 21) {
-            Television updateTelevision = repo.findById(id).orElseThrow(() -> new RecordNotFoundException("No television in list with id " + id + "!"));
-
-            updateTelevision.setType(updateTelevisionDetails.getType());
-            updateTelevision.setBrand(updateTelevisionDetails.getBrand());
-            updateTelevision.setName(updateTelevisionDetails.getName());
-            updateTelevision.setPrice(updateTelevisionDetails.getPrice());
-            updateTelevision.setAvailableSize(updateTelevisionDetails.getAvailableSize());
-            updateTelevision.setRefreshRate(updateTelevisionDetails.getRefreshRate());
-            updateTelevision.setScreenType(updateTelevisionDetails.getScreenType());
-            updateTelevision.setScreenQuality(updateTelevisionDetails.getScreenQuality());
-            updateTelevision.setSmartTv(updateTelevisionDetails.isSmartTv());
-            updateTelevision.setWifi(updateTelevisionDetails.isWifi());
-            updateTelevision.setVoiceControl(updateTelevisionDetails.isVoiceControl());
-            updateTelevision.setHdr(updateTelevisionDetails.isHdr());
-            updateTelevision.setBluetooth(updateTelevisionDetails.isBluetooth());
-            updateTelevision.setAmbiLight(updateTelevisionDetails.isAmbiLight());
-            updateTelevision.setOriginalStock(updateTelevisionDetails.getOriginalStock());
-            updateTelevision.setSold(updateTelevisionDetails.getSold());
-
-            repo.save(updateTelevision);
-
-            return ResponseEntity.ok("Updated television #" + id + ".");
-
-        } else {
-            throw new ProductNameTooLongException("New name for television #" + id + " exceeds 20 characters! Please use a shorter name.");
+        } catch (Exception ex) {
+            return ResponseEntity.unprocessableEntity().body("Failed to create television");
         }
 
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTelevision(@PathVariable Long id) {
-        if (repo.findById(id).isPresent()) {
-            repo.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            throw new RecordNotFoundException("No television in list with id " + id + "!");
+        service.deleteTelevision(id);
+        return ResponseEntity.noContent().build();
+
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTelevision(@Valid @PathVariable Long id, @RequestBody TelevisionInputDto televisionInputDto, BindingResult br) {
+        try {
+            if (validationCheckToNullOrResponse(br) == null) {
+                TelevisionOutputDto televisionOutputDto = service.updateTelevision(id, televisionInputDto);
+                return ResponseEntity.ok("Updated television #" + id + ".");
+            } else {
+                return validationCheckToNullOrResponse(br);
+            }
+
+        } catch (Exception ex) {
+            return ResponseEntity.unprocessableEntity().body("Failed to update television");
         }
 
     }
