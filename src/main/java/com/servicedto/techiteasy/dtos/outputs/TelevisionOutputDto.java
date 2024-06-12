@@ -1,69 +1,30 @@
-package com.servicedto.techiteasy.models;
+package com.servicedto.techiteasy.dtos.outputs;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "televisions")
-public class Television {
-    @Id
-    @GeneratedValue
+public class TelevisionOutputDto {
     private Long id;
-    @Column(nullable = false)
     private String type;
-    @Column(nullable = false)
     private String brand;
-    @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
     private double price;
-    @Column(nullable = false)
     private double availableSize;
-    @Column(nullable = false)
     private double refreshRate;
-    @Column(nullable = false)
     private String screenType;
-    @Column(nullable = false)
     private String screenQuality;
-    @Column
     private boolean smartTv;
-    @Column
     private boolean wifi;
-    @Column
     private boolean voiceControl;
-    @Column
     private boolean hdr;
-    @Column
     private boolean bluetooth;
-    @Column
     private boolean ambiLight;
-    @Column(nullable = false)
     private Integer originalStock;
-    @Column(nullable = false)
     private Integer sold;
-
-    public Television() {}
-
-    public Television(String type, String brand, String name, double price, double availableSize, double refreshRate, String screenType, String screenQuality, boolean smartTv, boolean wifi, boolean voiceControl, boolean hdr, boolean bluetooth, boolean ambiLight, Integer originalStock, Integer sold) {
-        this.type = type;
-        this.brand = brand;
-        this.name = name;
-        this.price = price;
-        this.availableSize = availableSize;
-        this.refreshRate = refreshRate;
-        this.screenType = screenType;
-        this.screenQuality = screenQuality;
-        this.smartTv = smartTv;
-        this.wifi = wifi;
-        this.voiceControl = voiceControl;
-        this.hdr = hdr;
-        this.bluetooth = bluetooth;
-        this.ambiLight = ambiLight;
-        this.originalStock = originalStock;
-        this.sold = sold;
-    }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getType() {
